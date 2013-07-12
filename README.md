@@ -38,7 +38,7 @@ optional arguments:
 
 Usage examples
 --------------
-Let's say you need to find all files that have ugly urls under a directory, and then check which records in a database actually reference those tables:
+Let's say you need to find all files that have ugly urls under a directory, and then check which records in a database actually reference those files:
 ```sh
 $siteutil.py --sanitize -d path/with/ugly/files --database -u dbuser -p dbpass -n dbname \
              -t table1:id_col:search_col1,search_col2
@@ -64,6 +64,6 @@ UPDATE `table1` SET
   ) WHERE `id_col` = '38';
 ```
 
-Notice that only the columns that actually matched the file inside of the content will attempt to be updated.
+Notice that only the columns that actually matched the file pattern inside of the content will attempt to be updated.
 
 ... more doc comming soon ...

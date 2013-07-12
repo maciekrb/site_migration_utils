@@ -16,7 +16,7 @@
 
 import logging
 import MySQLdb
-from utils import convert_to_utf8
+from sitetools.utils import convert_to_utf8
 
 class DBExpressionFinder:
 

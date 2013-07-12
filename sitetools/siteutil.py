@@ -41,10 +41,10 @@ import logging
 import sys
 import HTMLParser
 from subprocess import Popen, PIPE
-from dbutils import DBExpressionFinder
-from utils import convert_to_utf8
-from utils import sanitize_path
-from utils import SEPARATOR
+from sitetools.dbutils import DBExpressionFinder
+from sitetools.utils import convert_to_utf8
+from sitetools.utils import sanitize_path
+from sitetools.utils import SEPARATOR
 
 
 def find_non_sanitized_files_in_path(path):
@@ -65,8 +65,8 @@ def parse_table_layout(layout):
     sys.exit(1)
 
   tbl, id_col, cols = layout.split(":")
-  cols = cols.split(",") if cols.find(',') else cols
-  return (tbl, cols, id_col)
+  columns = cols.split(",") if cols.find(',') else [cols]
+  return (tbl.strip(), [ c.strip() for c in columns ], id_col.strip())
 
 
 def sanitize_entries(entries, dbuser=None, dbpass=None, dbname=None, dbhost=None, tbl_layout=None):

@@ -21,5 +21,8 @@ setup(
     'Operating System :: OS Independent',
     'Topic :: Software Development :: Libraries'
   ],
-  requires=['chardet (>=2.2.1)']
+  requires=[
+    'chardet (>=2.2.1)',
+    'mysql-python (>=1.2.4)'
+  ]
 )

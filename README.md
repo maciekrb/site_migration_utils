@@ -13,7 +13,7 @@ Command line utils for website migration
 
 optional arguments:
   -h, --help            show this help message and exit
-  --sanitize            Sanitize mode, will search for ugly path in the given
+  --sanitize            Sanitize mode, will search for ugly paths in the given
                         folder and try to nice them out.
   --updateurl           Update URL mode, will generate scripts to update from
                         a source url to a target url.

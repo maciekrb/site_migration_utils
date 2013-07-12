@@ -36,4 +36,34 @@ optional arguments:
                         Verbosity level
 ```
 
+Usage examples
+--------------
+Let's say you need to find all files that have ugly urls under a directory, and then check which records in a database actually reference those tables:
+```sh
+$siteutil.py --sanitize -d path/with/ugly/files --database -u dbuser -p dbpass -n dbname \
+             -t table1:id_col:search_col1,search_col2
+```
+
+The above line will traverse the ``path/with/ugly/files`` searching for ugly named files, and will then connect to the database specified by the given params in order to find every file path pattern in the search_col1 and search_col2 of table1. The actual output of the script is the following:
+```sql
+
+UPDATE `table1` SET
+  `search_col1` = REPLACE(search_col1, 
+    'path/with/ugly/files/uGlY fiLe.GIF',
+    'path/with/ugly/files/ugly-file.gif'
+  ) WHERE `id_col` = '34';
+
+UPDATE `table1` SET
+  `search_col1` = REPLACE(search_col1, 
+    'path/with/ugly/files/OTHER !nice! file.GIF',
+    'path/with/ugly/files/other-nice-file.gif'
+  ),
+  `search_col2` = REPLACE(search_col1, 
+    'path/with/ugly/files/OTHER !nice! file.GIF',
+    'path/with/ugly/files/other-nice-file.gif'
+  ) WHERE `id_col` = '38';
+```
+
+Notice that only the columns that actually matched the file inside of the content will attempt to be updated.
+
 ... more doc comming soon ...

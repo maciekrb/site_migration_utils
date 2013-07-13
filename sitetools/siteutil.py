@@ -28,9 +28,9 @@ via shell or sql scripts. The following are the modes of operation:
   - --sanitize: This case searches all files within a given folder, with 
     names that are not very nice to be used as urls. Actions inclued in this
     mode of operation are:
-      - --movefiles: Generates shell script lines to be reviewed and executed
+      - --filesystem: Generates shell script lines to be reviewed and executed
         to move the ugly paths into sanitized ones.
-      - --updatetables: Generates SQL script with updates of relevant rows and
+      - --database: Generates SQL script with updates of relevant rows and
         columns replacing ugly paths with sanitized ones.
 
   - --updateurl: This case updates a given domain name with a new one.
@@ -42,6 +42,7 @@ import sys
 import HTMLParser
 from subprocess import Popen, PIPE
 from sitetools.dbutils import DBExpressionFinder
+from sitetools.shutils import ShellScriptUtil
 from sitetools.utils import convert_to_utf8
 from sitetools.utils import sanitize_path
 from sitetools.utils import SEPARATOR
@@ -68,6 +69,15 @@ def parse_table_layout(layout):
   columns = cols.split(",") if cols.find(',') else [cols]
   return (tbl.strip(), [ c.strip() for c in columns ], id_col.strip())
 
+def _process_entry(path, html_parser):
+  path = path.strip()
+  path = path[2:] if path.startswith('.'+SEPARATOR) else path
+  utf8_path = convert_to_utf8(path)
+  unescaped = html_parser.unescape(utf8_path)
+  sanitized = sanitize_path(unescaped)
+  logging.debug("==FRM>[%s]" % unescaped)
+  logging.debug(" +=TO>[%s]" % sanitized)
+  return path, sanitized
 
 def sanitize_entries(entries, dbuser=None, dbpass=None, dbname=None, dbhost=None, tbl_layout=None):
 
@@ -75,7 +85,8 @@ def sanitize_entries(entries, dbuser=None, dbpass=None, dbname=None, dbhost=None
   html_parser = HTMLParser.HTMLParser()
 
   if dbuser and dbpass and dbname:
-    # Init Classes that will try to reference target data
+    """ Database info provided, so try the --database script generation """
+
     dbref = DBExpressionFinder(dbuser, dbpass, dbname, dbhost)
     if tbl_layout.find('|'):
       for layout in tbl_layout.split('|'):
@@ -84,24 +95,17 @@ def sanitize_entries(entries, dbuser=None, dbpass=None, dbname=None, dbhost=None
       dbref.register_target(*parse_table_layout(tbl_layout))
 
     for r in entries:
-      path = r.strip()
-      path = path[2:] if path.startswith('.'+SEPARATOR) else path
-      utf8_path = convert_to_utf8(path)
-      unescaped = html_parser.unescape(utf8_path)
-      sanitized = sanitize_path(unescaped)
-      logging.debug("==FRM>[%s]" % unescaped)
-      logging.debug(" +=TO>[%s]" % sanitized)
-      upd = dbref.get_update_statements(path, sanitized)
+      original, sanitized = _process_entry(r, html_parser)
+      upd = dbref.get_update_statements(original, sanitized)
       if upd: yield upd
       
-
   else:
-    """ dummy """
-    """
-    text = convert_to_utf8(record)
-    logging.debug(" |-htmldecode-> %s" % text)
-    """
-    pass
+    """ No database info available, generate filesystem scripts """
+    shtool = ShellScriptUtil()
+    for r in entries:
+      original, sanitized = _process_entry(r, html_parser)
+      shln = shtool.get_move_statements(original, sanitized)
+      if shln: yield shln
 
 def main():
   parser = argparse.ArgumentParser(description="Command line utils for website migration")

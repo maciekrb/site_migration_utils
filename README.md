@@ -66,4 +66,17 @@ UPDATE `table1` SET
 
 Notice that only the columns that actually matched the file pattern inside of the content will attempt to be updated.
 
+To sort the whole thing out, the actual paths need to be renamed in the file system, and thus
+```sh
+$siteutil.py --sanitize -d path/with/ugly/files --filesystem
+```
+generates something like this :
+
+```sh
+mv "path/with/ugly/files/uGlY fiLe.GIF" path/with/ugly/files/ugly-file.gif
+mv "path/with/ugly/files/OTHER !nice! file.GIF" path/with/ugly/files/other-nice-file.gif
+mv "path/with/ugly/files/Ugl Y Dir" path/with/ugly/files/uglydir
+mv "path/with/ugly/files/uglydir/uGlY fiLe.GIF" path/with/ugly/files/uglydir/ugly-file.gif
+```
+
 ... more doc comming soon ...

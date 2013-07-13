@@ -5,9 +5,11 @@ Site Migration Utilities are a set of simple tools to assist in the migration pr
 
 ```sh
 $siteutil.py -h
-usage: siteutil.py [-h] [--sanitize] [--updateurl] [-d DIRECTORY] [-f FILE]
+
+usage: siteutil.py [-h] [--sanitize] [--replace] [-d DIRECTORY] [-f FILE]
                    [--filesystem] [--database] [--host HOST] [-u USER]
-                   [-p PWD] [-n DBNAME] [-t TLAYOUT] [-v {WARN,INFO,DEBUG}]
+                   [-p PWD] [-n DBNAME] [-t TLAYOUT] [--needle NEEDLE]
+                   [--replacement REPLACEMENT] [-v {WARN,INFO,DEBUG}]
 
 Command line utils for website migration
 
@@ -15,7 +17,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --sanitize            Sanitize mode, will search for ugly paths in the given
                         folder and try to nice them out.
-  --updateurl           Update URL mode, will generate scripts to update from
+  --replace             Update URL mode, will generate scripts to update from
                         a source url to a target url.
   -d DIRECTORY, --directory DIRECTORY
                         Base directory to search for ugly files
@@ -32,8 +34,12 @@ optional arguments:
                         where id is a row unique id and col1, col2 and col3
                         are the columns in which the expression will be
                         searched
+  --needle NEEDLE       The value that will be searched for, and replaced
+  --replacement REPLACEMENT
+                        The value that will replace --needle
   -v {WARN,INFO,DEBUG}, --verbosity {WARN,INFO,DEBUG}
                         Verbosity level
+
 ```
 
 Usage examples
@@ -79,4 +85,63 @@ mv "path/with/ugly/files/Ugl Y Dir" path/with/ugly/files/uglydir
 mv "path/with/ugly/files/uglydir/uGlY fiLe.GIF" path/with/ugly/files/uglydir/ugly-file.gif
 ```
 
-... more doc comming soon ...
+Finally, when for example moving a very old Joomla site images to Amazon S3, you might want to do:
+
+```sh
+$siteutil.py --replace --needle=http://example.com/images \
+  --replacement=http://example.com.s3.amazonaws.com/images --database \
+  -u dbuser -p dbpass -n dbname -t jos_content:id:urlimage,fulltext
+```
+
+This would output : 
+```sql
+UPDATE `jos_content` SET 
+ `urlimage` = REPLACE(path_imagen, 
+  'http://example.com/images', 
+  'http://example.com.s3.amazonaws.com/images'
+ ) 
+ `fulltext` = REPLACE(path_imagen, 
+  'http://example.com/images', 
+  'http://example.com.s3.amazonaws.com/images'
+ ) WHERE `id` = '4297';
+UPDATE `jos_content` SET 
+ `urlimage` = REPLACE(path_imagen, 
+  'http://example.com/images', 
+  'http://example.com.s3.amazonaws.com/images'
+ )
+ `fulltext` = REPLACE(path_imagen, 
+  'http://example.com/images', 
+  'http://example.com.s3.amazonaws.com/images'
+ ) WHERE `id` = '4368';
+UPDATE `jos_content` SET 
+ `urlimage` = REPLACE(path_imagen, 
+  'http://example.com/images', 
+  'http://example.com.s3.amazonaws.com/images'
+ ) WHERE `id` = '4429';
+UPDATE `jos_content` SET 
+ `urlimage` = REPLACE(path_imagen, 
+  'http://example.com/images', 
+  'http://example.com.s3.amazonaws.com/images'
+ ) WHERE `id` = '4506';
+UPDATE `jos_content` SET 
+ `urlimage` = REPLACE(path_imagen, 
+  'http://example.com/images', 
+  'http://example.com.s3.amazonaws.com/images'
+ ) WHERE `id` = '5423';
+
+```
+
+Installation
+============
+
+Easiest way of getting up and running is using pip: `pip install git+https://github.com/maciekrb/site_migration_utils.git`. 
+
+You will need to install the following dependencies:
+  - `pip install mysql-python`
+  - `pip install chardet`
+  - `pip install git+https://github.com/maciekrb/py-textutils.git`
+
+Bugs
+====
+
+Please feel free to report any unexpected behaviors or perks you might consider useful by using the issue tracker.

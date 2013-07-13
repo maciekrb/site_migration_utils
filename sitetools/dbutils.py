@@ -22,11 +22,12 @@ class DBExpressionFinder:
 
   skel = [ "SELECT {fields} from {table} WHERE {where}", "`{field}` like {pattern}"]
 
-  def __init__(self, dbuser, dbpass, dbname, host='localhost'):
+  def __init__(self, dbuser, dbpass, dbname, host='localhost', wildcard_start=True):
     db = MySQLdb.connect(host="localhost", user=dbuser, passwd=dbpass, db=dbname, charset='utf8') 
     self.cursor = db.cursor()
     self.table_map = {}
     self.sentence = {}
+    self.wildcard = "%{}" if wildcard_start else "{}%"
 
   
   def register_target(self, table_name, search_columns, id_column):
@@ -82,7 +83,7 @@ class DBExpressionFinder:
     sentence = self.sentence[table]
 
     logging.debug(" +=exec=> {}".format(sentence))
-    self.cursor.execute(sentence, tuple([ "%{}".format(needle) for i in enumerate(tbl['columns'])]))
+    self.cursor.execute(sentence, tuple([ self.wildcard.format(needle) for i in enumerate(tbl['columns'])]))
     columns = tuple( [d[0].decode('utf8') for d in self.cursor.description] )
     results = []
     for row in self.cursor.fetchall():

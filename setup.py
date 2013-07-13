@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
   name="sitetools",
-  version="0.1",
+  version="1.0.0",
   author="Maciek Ruckgaber",
   author_email="maciekrb@gmail.com",
   description="Python utils for assisting in site migration tasks",
@@ -14,7 +14,7 @@ setup(
       "sitetools/siteutil.py"
   ],
   classifiers=[
-    'Development Status :: 3 - Alpha',
+    'Development Status :: Release Candidate',
     'Environment :: Web Environment',
     'Intended Audience :: Web App Developers, Systems Administrators',
     'License :: BSD License',

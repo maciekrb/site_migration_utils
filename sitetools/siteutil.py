@@ -26,14 +26,20 @@ The tools do not modify anything, just generate code to be executed, either
 via shell or sql scripts. The following are the modes of operation:
 
   - --sanitize: This case searches all files within a given folder, with 
-    names that are not very nice to be used as urls. Actions inclued in this
+    names that are not very nice to be used as urls. Scopes inclued in this
     mode of operation are:
+
       - --filesystem: Generates shell script lines to be reviewed and executed
         to move the ugly paths into sanitized ones.
       - --database: Generates SQL script with updates of relevant rows and
         columns replacing ugly paths with sanitized ones.
 
-  - --updateurl: This case updates a given domain name with a new one.
+  - --replace: This case updates a --needle=value  with a --replacement=value. Scopes
+    included in this mode of operation are:
+
+      - --database: Generates the SQL script with updates of relevant rows and
+        columns replacing --needle with --replacement
+       
 """
 
 import argparse
@@ -79,6 +85,20 @@ def _process_entry(path, html_parser):
   logging.debug(" +=TO>[%s]" % sanitized)
   return path, sanitized
 
+def replace(needle, replacement, dbuser=None, dbpass=None, dbname=None, dbhost=None, tbl_layout=None):
+  if dbuser and dbpass and dbname:
+    """ Database info provided, so try the --database script generation """
+
+    dbref = DBExpressionFinder(dbuser, dbpass, dbname, dbhost, wildcard_start=False)
+    if tbl_layout.find('|'):
+      for layout in tbl_layout.split('|'):
+        dbref.register_target(*parse_table_layout(layout))
+    else:
+      dbref.register_target(*parse_table_layout(tbl_layout))
+    
+    upd = dbref.get_update_statements(needle, replacement)
+    if upd: yield upd
+
 def sanitize_entries(entries, dbuser=None, dbpass=None, dbname=None, dbhost=None, tbl_layout=None):
 
   # Init HTML Entity parser
@@ -112,9 +132,9 @@ def main():
 
   """ modes of operation """
   parser.add_argument('--sanitize', action="store_true", help="""
-    Sanitize mode, will search for ugly path in the given folder and try to nice them out.
+    Sanitize mode, will search for ugly paths in the given folder and try to nice them out.
   """)
-  parser.add_argument('--updateurl', action="store_true", help="""
+  parser.add_argument('--replace', action="store_true", help="""
     Update URL mode, will generate scripts to update from a source url to a target url.
   """)
 
@@ -132,6 +152,10 @@ def main():
   parser.add_argument('-t', '--tlayout', help="""
     Table layout as follows: table_name:id:co1,col2,col3  where id is a row unique id and col1,
     col2 and col3 are the columns in which the expression will be searched""")
+
+  """ Replace Mode """
+  parser.add_argument('--needle', help="The value that will be searched for, and replaced")
+  parser.add_argument('--replacement', help="The value that will replace --needle")
 
   """ Other options """
   parser.add_argument('-v', '--verbosity', help="Verbosity level", 
@@ -160,10 +184,17 @@ def main():
     for entry in sanitize_entries(entries, args.user, args.pwd, args.dbname, args.host, args.tlayout):
       print entry
 
-  elif args.updateurl:
-    pass
+  elif args.replace:
+    if not (args.needle and args.replacement and args.user and args.pwd and  args.dbname and args.tlayout):
+      print """ --needle, --replacement, -u, -p, -n  and -t are required in the 
+      --replace mode of operation"""
+      sys.exit(1)
+
+    for res in replace(args.needle, args.replacement, args.user, args.pwd, args.dbname, args.host, args.tlayout):
+      print res
+
   else:
-    print "Only --sanitize and --updateurl are valid modes of operation"
+    print "Only --sanitize and --replace are valid modes of operation"
     sys.exit(1)
 
 if __name__ == '__main__':

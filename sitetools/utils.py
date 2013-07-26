@@ -22,12 +22,13 @@ def batch_replace(text, needle=['_'], replacement=['-']):
   return text
 
 def sanitize_path(path):
-  path = batch_replace(path)
+  #path = batch_replace(path)
   parts = []
   for part in path.split(SEPARATOR):
     try:
       fname, ext = part.rsplit('.', 1)
-      parts.append("{}.{}".format(sanitize(fname.strip(), allow_spaces=False, remap_unicode=True), ext))
+      logging.debug("POINT SPLIT %s.%s" % (fname, ext))
+      parts.append("{0}.{1}".format(sanitize(fname.strip(), allow_spaces=False, remap_unicode=True), ext))
     except ValueError:
       parts.append(sanitize(part, allow_spaces=False, remap_unicode=True))
       

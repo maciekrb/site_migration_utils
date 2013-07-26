@@ -182,7 +182,7 @@ def main():
       sys.exit(1)
 
     for entry in sanitize_entries(entries, args.user, args.pwd, args.dbname, args.host, args.tlayout):
-      print entry
+      print convert_to_utf8(entry).encode('utf8')
 
   elif args.replace:
     if not (args.needle and args.replacement and args.user and args.pwd and  args.dbname and args.tlayout):
@@ -191,7 +191,7 @@ def main():
       sys.exit(1)
 
     for res in replace(args.needle, args.replacement, args.user, args.pwd, args.dbname, args.host, args.tlayout):
-      print res
+      print convert_to_utf8(entry).encode('utf8')
 
   else:
     print "Only --sanitize and --replace are valid modes of operation"

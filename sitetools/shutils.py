@@ -7,9 +7,6 @@ class PathCardinalityException(Exception):
   pass
 
 class ShellScriptUtil:
-  """
-    { "sOme Path" : "somepath"
-  """
 
   def __init__(self):
     self.flushed_paths = []
@@ -18,7 +15,7 @@ class ShellScriptUtil:
   def get_move_statements(self, original, sanitized):
 
     """ Nothing to do if paths are equal """
-    if original == sanitized: return None
+    if convert_to_utf8(original) == sanitized : return None
 
 
     orig_base, orig_file = os.path.split(original)

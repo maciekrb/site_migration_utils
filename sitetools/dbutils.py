@@ -23,11 +23,11 @@ class DBExpressionFinder:
   skel = [ "SELECT {fields} from {table} WHERE {where}", "`{field}` like {pattern}"]
 
   def __init__(self, dbuser, dbpass, dbname, host='localhost', wildcard_start=True):
-    db = MySQLdb.connect(host="localhost", user=dbuser, passwd=dbpass, db=dbname, charset='utf8') 
+    db = MySQLdb.connect(host=host, user=dbuser, passwd=dbpass, db=dbname, charset='utf8') 
     self.cursor = db.cursor()
     self.table_map = {}
     self.sentence = {}
-    self.wildcard = "%{}" if wildcard_start else "{}%"
+    self.wildcard = "%{0}" if wildcard_start else "{0}%"
 
   
   def register_target(self, table_name, search_columns, id_column):
@@ -39,7 +39,7 @@ class DBExpressionFinder:
       where.append(self.skel[1].format(field=col, pattern="%s"))
 
     return self.skel[0].format(
-      fields=",".join(["`{}`".format(c) for c in columns + [ id_column ]]), 
+      fields=",".join(["`{0}`".format(c) for c in columns + [ id_column ]]), 
       table=table, 
       where=" OR ".join(where)
     )
@@ -57,9 +57,9 @@ class DBExpressionFinder:
     return cols
 
   def _make_update_statement(self, needle, replacement, table, cols, id_col, record_id):
-    needle = needle.replace("'","\'")
+    needle = needle.replace("'", r"\'")
     utf8_needle = convert_to_utf8(needle)
-    rpl_col = u" `%s` = REPLACE(%s, \n  '%s', \n  '%s'\n )"
+    rpl_col = u" `%s` = REPLACE(`%s`, \n  '%s', \n  '%s'\n )"
     stmt = u"UPDATE `{table}` SET \n".format(table=table)
     stmt += u",\n ".join([ rpl_col % (c, c, utf8_needle, replacement)  for c in cols ])
     stmt += u" WHERE `{id_col}` = '{record_id}';".format(id_col=id_col, record_id=record_id)
@@ -82,7 +82,7 @@ class DBExpressionFinder:
 
     sentence = self.sentence[table]
 
-    logging.debug(" +=exec=> {}".format(sentence))
+    logging.debug(" +=exec=> {0}".format(sentence))
     self.cursor.execute(sentence, tuple([ self.wildcard.format(needle) for i in enumerate(tbl['columns'])]))
     columns = tuple( [d[0].decode('utf8') for d in self.cursor.description] )
     results = []

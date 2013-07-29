@@ -191,7 +191,7 @@ def main():
       sys.exit(1)
 
     for res in replace(args.needle, args.replacement, args.user, args.pwd, args.dbname, args.host, args.tlayout):
-      print convert_to_utf8(entry).encode('utf8')
+      print convert_to_utf8(res).encode('utf8')
 
   else:
     print "Only --sanitize and --replace are valid modes of operation"

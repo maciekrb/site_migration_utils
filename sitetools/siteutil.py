@@ -89,7 +89,7 @@ def replace(needle, replacement, dbuser=None, dbpass=None, dbname=None, dbhost=N
   if dbuser and dbpass and dbname:
     """ Database info provided, so try the --database script generation """
 
-    dbref = DBExpressionFinder(dbuser, dbpass, dbname, dbhost, wildcard_start=False)
+    dbref = DBExpressionFinder(dbuser, dbpass, dbname, dbhost, wildcard='both')
     if tbl_layout.find('|'):
       for layout in tbl_layout.split('|'):
         dbref.register_target(*parse_table_layout(layout))
